@@ -7,8 +7,8 @@ import EditEmployee from "../components/Edit_Employee"
 import DeleteEmployee from "../components/Delete_Employee"
 import { API_BASE_URL } from "../config/api"
 import { useNavigate } from "react-router-dom"
+import { getTypographyClass, getButtonTypographyClass, getNumericTypographyClass } from "../utils/typography"
 
-// Custom dropdown to prevent native select overflow on mobile
 const CustomSelect = ({ value, onChange, options, placeholder }) => {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
@@ -28,11 +28,11 @@ const CustomSelect = ({ value, onChange, options, placeholder }) => {
       <button
         type="button"
         onClick={() => setOpen(prev => !prev)}
-        className="flex items-center justify-between gap-1 px-1.5 py-1 text-xs bg-white rounded-md focus:outline-none focus:ring-2 focus:ring-[#5C7346] min-w-[80px] md:px-4 md:py-2 md:text-sm md:min-w-[110px]"
+        className="flex items-center justify-between gap-1 px-2 py-1.5 text-sm bg-white dark:bg-dark-bg text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-dark-border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5C7346] min-w-[90px] md:px-4 md:py-2 md:text-base md:min-w-[120px]"
       >
         <span className="truncate">{selected?.label || placeholder}</span>
         <svg
-          className={`w-3 h-3 flex-shrink-0 transition-transform text-gray-500 ${open ? "rotate-180" : ""}`}
+          className={`w-3 h-3 flex-shrink-0 transition-transform text-gray-500 dark:text-gray-400 ${open ? "rotate-180" : ""}`}
           fill="none" viewBox="0 0 24 24" stroke="currentColor"
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -40,13 +40,13 @@ const CustomSelect = ({ value, onChange, options, placeholder }) => {
       </button>
 
       {open && (
-        <ul className="absolute right-0 top-full mt-1 w-full min-w-[120px] bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-48 overflow-y-auto">
+        <ul className="absolute right-0 top-full mt-1 w-full min-w-[120px] bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-md shadow-lg z-50 max-h-48 overflow-y-auto">
           {options.map(option => (
             <li
               key={option.value}
               onClick={() => { onChange(option.value); setOpen(false) }}
-              className={`px-3 py-2 text-xs cursor-pointer hover:bg-[#5C7346] hover:text-white transition-colors md:text-sm ${
-                value === option.value ? "bg-[#5C7346] text-white font-medium" : "text-gray-800"
+              className={`px-3 py-2 text-sm cursor-pointer hover:bg-[#5C7346] hover:text-white transition-colors md:text-base ${
+                value === option.value ? "bg-[#5C7346] text-white font-medium" : "text-gray-800 dark:text-gray-200"
               }`}
             >
               {option.label}
@@ -247,7 +247,6 @@ function AdminEmployeePage() {
     navigate(`/employee/schedule/${employeeId}`)
   }
 
-  // Build option arrays for CustomSelect
   const yearOptions = [
     { value: "all", label: "All Years" },
     ...years.map(y => ({ value: y.toString(), label: y.toString() }))
@@ -257,47 +256,67 @@ function AdminEmployeePage() {
     ...roles.map(r => ({ value: r.toLowerCase(), label: capitalizeRole(r) }))
   ]
 
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>
-  if (error) return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-red-500">{error}</div>
+  if (loading) return (
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-bg flex items-center justify-center text-gray-800 dark:text-gray-100 transition-colors duration-300">
+      Loading...
+    </div>
+  )
+  if (error) return (
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-bg flex items-center justify-center text-red-500 transition-colors duration-300">
+      {error}
+    </div>
+  )
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-bg font-sans transition-colors duration-300">
       <NavBar />
 
-      <div className="container mx-auto px-3 pt-3 md:px-8 md:pt-20">
-        <div className="bg-[#333333] rounded-lg p-3 md:p-6">
+      <div className="container mx-auto px-3 pt-12 md:px-8 md:pt-20">
 
-          {/* Header Section */}
+        {/* Heading */}
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-700 dark:text-gray-100">Employees</h1>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-2">Manage your team members, view their information, and handle employee records</p>
+        </div>
+
+        {/* Pill Slider */}
+        <div className="flex justify-center mb-3">
+          <div className="inline-flex bg-gray-100 dark:bg-dark-card rounded-full p-1">
+            <button
+              className={`px-6 py-2 text-sm rounded-full md:px-8 md:py-2 md:text-base transition-colors ${
+                activeTab === "active"
+                  ? "bg-gray-600 dark:bg-gray-500 text-white font-semibold"
+                  : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+              }`}
+              onClick={() => handleTabChange("active")}
+            >
+              Active
+            </button>
+            <button
+              className={`px-6 py-2 text-sm rounded-full md:px-8 md:py-2 md:text-base transition-colors ${
+                activeTab === "inactive"
+                  ? "bg-gray-600 dark:bg-gray-500 text-white font-semibold"
+                  : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+              }`}
+              onClick={() => handleTabChange("inactive")}
+            >
+              Inactive
+            </button>
+          </div>
+        </div>
+
+        {/* Card */}
+        <div className="bg-white dark:bg-dark-card rounded-lg p-3 md:p-6 border border-transparent dark:border-dark-border">
+
+          {/* Header — search and filters */}
           <div className="flex flex-col space-y-2 md:space-y-0 md:flex-row md:justify-between md:items-center mb-4 md:mb-6">
-
-            {/* Tab Buttons */}
-            <div className="flex space-x-2">
-              <button
-                className={`px-3 py-1 text-sm md:px-6 md:py-2 md:text-base rounded-md ${
-                  activeTab === "active" ? "bg-[#5C7346] text-white font-semibold" : "bg-[#D1DBC4] text-gray-700"
-                }`}
-                onClick={() => handleTabChange("active")}
-              >
-                Active
-              </button>
-              <button
-                className={`px-3 py-1 text-sm md:px-6 md:py-2 md:text-base rounded-md ${
-                  activeTab === "inactive" ? "bg-[#5C7346] text-white font-semibold" : "bg-[#D1DBC4] text-gray-700"
-                }`}
-                onClick={() => handleTabChange("inactive")}
-              >
-                Inactive
-              </button>
-            </div>
-
-            {/* Search and Filters */}
             <div className="flex flex-row items-center gap-1.5 md:gap-2">
               <input
                 type="search"
-                placeholder="Search by name, ID, position..."
+                placeholder="Search"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="px-2 py-1 text-xs rounded-md border-0 w-full md:w-54 md:px-4 md:py-2 md:text-sm"
+                className="px-3 py-2 text-sm rounded-md border border-gray-200 dark:border-dark-border bg-white dark:bg-dark-bg text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#5C7346] w-full md:w-64 md:px-4 md:py-2 md:text-base"
               />
               {activeTab === "active" && (
                 <div className="flex items-center gap-1.5 md:gap-2">
@@ -318,65 +337,75 @@ function AdminEmployeePage() {
             </div>
           </div>
 
-          {/* Title */}
-          <h2 className="text-base font-semibold text-white mb-3 md:text-3xl md:mb-4">Employees</h2>
-
           {/* Employee Table */}
           <div className="overflow-x-auto -mx-3 md:mx-0">
             <div className="px-3 md:px-0">
               <table className="w-full">
                 <thead>
-                  <tr className="text-left text-white border-b border-white/20 whitespace-nowrap">
-                    <th className="py-2 px-2 text-xs w-[10%] md:py-3 md:px-4 md:text-sm">ID</th>
-                    <th className="py-2 px-2 text-xs w-[20%] md:py-3 md:px-4 md:text-sm">Name</th>
-                    <th className="py-2 px-2 text-xs w-[10%] md:py-3 md:px-4 md:text-sm">Position</th>
-                    <th className="py-2 px-2 text-xs w-[10%] md:py-3 md:px-4 md:text-sm">Year Employed</th>
+                  <tr className="text-left text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-dark-border whitespace-nowrap">
+                    {/* Combined Employee column */}
+                    <th className="py-2 px-2 text-sm w-[40%] md:py-3 md:px-4 md:text-base md:w-[30%]">Employee</th>
+                    <th className="py-2 px-2 text-sm w-[25%] md:py-3 md:px-4 md:text-base md:w-[20%]">Position</th>
+                    <th className="py-2 px-2 text-sm w-[20%] md:py-3 md:px-4 md:text-base md:w-[15%]">Year Employed</th>
                     {activeTab === "inactive" && (
-                      <th className="py-2 px-2 text-xs w-[15%] md:py-3 md:px-4 md:text-sm">Year Resigned</th>
+                      <th className="py-2 px-2 text-sm md:py-3 md:px-4 md:text-base">Year Resigned</th>
                     )}
                     {activeTab === "active" && (
-                      <th className="hidden md:table-cell py-3 px-4 text-sm w-[10%]">Status</th>
+                      <th className="hidden md:table-cell py-3 px-4 text-base w-[10%]">Status</th>
                     )}
                     {activeTab === "active" && (
-                      <th className="hidden md:table-cell py-3 px-4 text-sm w-[15%]">Actions</th>
+                      <th className="hidden md:table-cell py-3 px-4 text-base w-[15%]">Actions</th>
                     )}
                   </tr>
                 </thead>
-                <tbody className="text-white">
+                <tbody className="text-gray-800 dark:text-gray-100">
                   {currentEmployees.map((employee) => (
                     <>
-                      <tr key={employee.id} className={activeTab === "active" ? "md:border-b md:border-white/10" : "border-b border-white/10"}>
-                        <td className="py-2 px-2 text-xs overflow-hidden text-ellipsis whitespace-nowrap md:py-3 md:px-4 md:text-sm">
-                          {employee.employee_number}
+                      <tr
+                        key={employee.id}
+                        className={activeTab === "active" ? "md:border-b md:border-gray-100 dark:md:border-dark-border" : "border-b border-gray-100 dark:border-dark-border"}
+                      >
+                        {/* Combined Name + ID cell */}
+                        <td className="py-2 px-2 md:py-3 md:px-4">
+                          <div
+                            className="font-medium text-base md:text-xl overflow-hidden text-ellipsis whitespace-nowrap"
+                            title={`${employee.first_name} ${employee.last_name}`}
+                          >
+                            {(() => {
+                              const fullName = `${employee.first_name} ${employee.last_name}`
+                              return fullName.length > 60 ? fullName.substring(0, 57) + "..." : fullName
+                            })()}
+                          </div>
+                          <div className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                            {employee.employee_number}
+                          </div>
                         </td>
-                        <td className="py-2 px-2 text-xs overflow-hidden text-ellipsis whitespace-nowrap md:py-3 md:px-4 md:text-sm"
-                          title={`${employee.first_name} ${employee.last_name}`}
-                        >
-                          {(() => {
-                            const fullName = `${employee.first_name} ${employee.last_name}`
-                            return fullName.length > 60 ? fullName.substring(0, 57) + "..." : fullName
-                          })()}
-                        </td>
-                        <td className="py-2 px-2 text-xs overflow-hidden text-ellipsis whitespace-nowrap md:py-3 md:px-4 md:text-sm"
+
+                        <td
+                          className="py-2 px-2 text-sm overflow-hidden text-ellipsis whitespace-nowrap md:py-3 md:px-4 md:text-base"
                           title={employee.position}
                         >
                           {employee.position}
                         </td>
-                        <td className="py-2 px-2 text-xs overflow-hidden text-ellipsis whitespace-nowrap md:py-3 md:px-4 md:text-sm">
+
+                        <td className="py-2 px-2 text-sm overflow-hidden text-ellipsis whitespace-nowrap md:py-3 md:px-4 md:text-base">
                           {getYearFromDate(employee.hire_date)}
                         </td>
+
                         {activeTab === "inactive" && (
-                          <td className="py-2 px-2 text-xs overflow-hidden text-ellipsis whitespace-nowrap md:py-3 md:px-4 md:text-sm">
+                          <td className="py-2 px-2 text-sm overflow-hidden text-ellipsis whitespace-nowrap md:py-3 md:px-4 md:text-base">
                             {getYearFromDate(employee.resignation_date) || "-"}
                           </td>
                         )}
+
                         {activeTab === "active" && (
                           <td className="hidden md:table-cell py-3 px-4">
-                            <span className="px-4 py-1 text-sm bg-green-100 text-green-800 rounded-full font-medium whitespace-nowrap">
+                            <span className="px-4 py-1 text-base bg-green-100 text-green-800 rounded-full font-medium whitespace-nowrap">
                               Active
                             </span>
                           </td>
                         )}
+
                         {activeTab === "active" && (
                           <td className="hidden md:table-cell py-3 px-4 whitespace-nowrap">
                             <div className="flex space-x-2">
@@ -405,8 +434,8 @@ function AdminEmployeePage() {
 
                       {/* Mobile-only actions sub-row */}
                       {activeTab === "active" && (
-                        <tr key={`mobile-actions-${employee.id}`} className="border-b border-white/10 md:hidden">
-                          <td colSpan="4" className="pb-2 px-2">
+                        <tr key={`mobile-actions-${employee.id}`} className="border-b border-gray-100 dark:border-dark-border md:hidden">
+                          <td colSpan="3" className="pb-2 px-2">
                             <div className="flex space-x-1">
                               <button
                                 onClick={() => handleEditClick(employee)}
@@ -434,8 +463,8 @@ function AdminEmployeePage() {
                   ))}
 
                   {[...Array(Math.max(0, employeesPerPage - currentEmployees.length))].map((_, index) => (
-                    <tr key={`empty-${index}`} className="border-b border-white/10 h-[40px] md:h-[52px]">
-                      <td colSpan={activeTab === "inactive" ? "5" : "7"}></td>
+                    <tr key={`empty-${index}`} className="border-b border-gray-100 dark:border-dark-border h-[48px] md:h-[60px]">
+                      <td colSpan={activeTab === "inactive" ? "4" : "5"}></td>
                     </tr>
                   ))}
                 </tbody>
@@ -443,40 +472,42 @@ function AdminEmployeePage() {
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="flex flex-row justify-between items-center mt-3 md:mt-6">
-            {activeTab === "active" && (
-              <button
-                onClick={() => setIsAddModalOpen(true)}
-                className="bg-black text-white px-4 py-1.5 text-xs rounded-md font-medium md:px-6 md:py-2 md:text-base"
-              >
-                Add Account
-              </button>
-            )}
-            {activeTab === "inactive" && <div />}
-
+          {/* Pagination */}
+          <div className="flex flex-row justify-end items-center mt-3 md:mt-6">
             <div className="flex justify-center space-x-1 md:space-x-2">
               <button
                 onClick={prevPage}
                 disabled={currentPage === 1}
-                className="bg-[#666666] text-white px-3 py-1.5 text-xs rounded-md disabled:opacity-50 md:px-4 md:py-2 md:text-base"
+                className="bg-[#666666] dark:bg-gray-600 text-white px-3 py-1.5 text-sm rounded-md disabled:opacity-50 md:px-4 md:py-2 md:text-base"
               >
                 Previous
               </button>
-              <div className="bg-white text-[#5C7346] px-3 py-1.5 text-xs rounded-md min-w-[60px] text-center md:px-4 md:py-2 md:text-base md:min-w-[80px]">
+              <div className="bg-white dark:bg-dark-bg text-[#5C7346] px-3 py-1.5 text-sm rounded-md min-w-[60px] text-center md:px-4 md:py-2 md:text-base md:min-w-[80px] border border-gray-200 dark:border-dark-border">
                 {currentPage} of {totalPages}
               </div>
               <button
                 onClick={nextPage}
                 disabled={currentPage === totalPages}
-                className="bg-[#666666] text-white px-3 py-1.5 text-xs rounded-md disabled:opacity-50 md:px-4 md:py-2 md:text-base"
+                className="bg-[#666666] dark:bg-gray-600 text-white px-3 py-1.5 text-sm rounded-md disabled:opacity-50 md:px-4 md:py-2 md:text-base"
               >
                 Next
               </button>
             </div>
           </div>
+
         </div>
       </div>
+
+      {/* Floating Add Account Button */}
+      {activeTab === "active" && (
+        <button
+          onClick={() => setIsAddModalOpen(true)}
+          className="fixed bottom-20 right-5 z-50 bg-[#5C7346] text-white px-5 py-3.5 rounded-full shadow-lg text-sm font-semibold flex items-center gap-2 md:bottom-8 md:right-8 md:text-base hover:bg-[#4a5c38] transition-colors"
+        >
+          <span className="text-lg leading-none">+</span>
+          Add Account
+        </button>
+      )}
 
       {/* Modals */}
       <AddEmployee isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onAdd={handleAddEmployee} />

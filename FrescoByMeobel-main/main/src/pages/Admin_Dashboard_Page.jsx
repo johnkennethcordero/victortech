@@ -1,6 +1,7 @@
 "use client"
 import { useEffect, useState } from "react"
 import NavBar from "../components/Nav_Bar"
+import { Users, DollarSign, Clock, Calendar } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import axios from "axios"
 import { API_BASE_URL } from "../config/api"
@@ -8,53 +9,41 @@ import { API_BASE_URL } from "../config/api"
 function AdminDashboardPage() {
   const navigate = useNavigate()
   const [payrollData, setPayrollData] = useState({
-    previous_payroll: "0.00",
-    previous_paydate: "Loading...",
-    upcoming_payroll: "0.00",
-    upcoming_paydate: "Loading..."
+    previous_payroll: "£12,450.00",
+    previous_paydate: "December 15, 2025",
+    upcoming_payroll: "£13,200.00",
+    upcoming_paydate: "January 15, 2026"
   })
-  const [transactions, setTransactions] = useState([])
+  const [totalEmployees, setTotalEmployees] = useState("Loading...")
+  const [transactions, setTransactions] = useState([
+    { id: 1, name: "Paula Peena",  formattedDate: "Dec 24, 2025", netPay: "£2,450.00" },
+    { id: 2, name: "Leena Jarvis", formattedDate: "Feb 17, 2026", netPay: "£2,350.00" },
+    { id: 3, name: "John Smith",   formattedDate: "Feb 10, 2026", netPay: "£2,500.00" },
+    { id: 4, name: "Emily Chen",   formattedDate: "Jan 27, 2026", netPay: "£2,200.00" },
+    { id: 5, name: "David Lee",    formattedDate: "Feb 3, 2026",  netPay: "£2,800.00" },
+  ])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [currentUser, setCurrentUser] = useState({
-    firstName: "",
-    loading: true
-  })
+  const [currentUser, setCurrentUser] = useState({ firstName: "", loading: true })
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
         const token = localStorage.getItem("access_token")
         const userId = localStorage.getItem("user_id")
-
-        if (!userId || !token) {
-          console.error("User ID or token not found")
-          return
-        }
+        if (!userId || !token) return
 
         const response = await fetch(`${API_BASE_URL}/employment-info/employee-number/${userId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         })
-
         if (!response.ok) throw new Error("Failed to fetch user data")
-
         const userData = await response.json()
-        setCurrentUser({
-          firstName: userData.first_name || "User",
-          loading: false
-        })
+        setCurrentUser({ firstName: userData.first_name || "User", loading: false })
       } catch (err) {
         console.error("Error fetching current user:", err)
-        setCurrentUser({
-          firstName: "User",
-          loading: false
-        })
+        setCurrentUser({ firstName: "User", loading: false })
       }
     }
-
     fetchCurrentUser()
   }, [])
 
@@ -65,97 +54,36 @@ function AdminDashboardPage() {
         const token = localStorage.getItem("access_token")
 
         const totalPayrollRes = await fetch(`${API_BASE_URL}/total-payroll/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         })
-
         if (!totalPayrollRes.ok) throw new Error("Failed to fetch total payroll data")
         const totalPayrollData = await totalPayrollRes.json()
 
-        const payslipRes = await fetch(`${API_BASE_URL}/payslip/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+        const employeesRes = await fetch(`${API_BASE_URL}/employment-info/`, {
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         })
-
-        if (!payslipRes.ok) throw new Error("Failed to fetch payslip data")
-        const payslipData = await payslipRes.json()
-
-        const processedTransactions = payslipData.map(item => ({
-          id: item.id,
-          name: item.payroll_id?.employment_info_id
-            ? `${item.payroll_id.employment_info_id.first_name} ${item.payroll_id.employment_info_id.last_name}`
-            : "Unknown",
-          role: item.payroll_id?.employment_info_id?.position || "Unknown",
-          date: item.payroll_id?.pay_date
-            ? new Date(item.payroll_id.pay_date).toLocaleDateString('en-US', {
-                month: 'short', day: 'numeric', year: 'numeric'
-              })
-            : "Unknown",
-          formattedDate: item.payroll_id?.pay_date
-            ? `${new Date(item.payroll_id.pay_date).toLocaleDateString('en-US', {
-                month: 'short'
-              })} ${new Date(item.payroll_id.pay_date).getDate()},\n${new Date(item.payroll_id.pay_date).getFullYear()}`
-            : "Unknown",
-          netPay: item.payroll_id?.net_pay
-            ? `₱${parseFloat(item.payroll_id.net_pay).toLocaleString(undefined, {
-                minimumFractionDigits: 2, maximumFractionDigits: 2
-              })}`
-            : "₱0.00",
-          grossPay: item.payroll_id?.gross_pay
-            ? `₱${parseFloat(item.payroll_id.gross_pay).toLocaleString(undefined, {
-                minimumFractionDigits: 2, maximumFractionDigits: 2
-              })}`
-            : "₱0.00",
-          totalDeductions: item.payroll_id?.total_deductions
-            ? `₱${parseFloat(item.payroll_id.total_deductions).toLocaleString(undefined, {
-                minimumFractionDigits: 2, maximumFractionDigits: 2
-              })}`
-            : "₱0.00",
-          rate: item.payroll_id?.salary_id?.earnings_id?.basic_rate
-            ? `₱${parseFloat(item.payroll_id.salary_id.earnings_id.basic_rate).toLocaleString(undefined, {
-                minimumFractionDigits: 2, maximumFractionDigits: 2
-              })}/MONTH`
-            : "N/A",
-          user_id: item.user_id,
-          profilePicture: item.payroll_id?.employment_info_id?.profile_picture || null
-        }))
+        if (!employeesRes.ok) throw new Error("Failed to fetch employees data")
+        const employeesData = await employeesRes.json()
+        setTotalEmployees(employeesData.length.toString())
 
         const formattedPayrollData = totalPayrollData.length > 0
           ? {
               previous_payroll: totalPayrollData[0].previous_payroll
-                ? `₱${parseFloat(totalPayrollData[0].previous_payroll).toLocaleString(undefined, {
-                    minimumFractionDigits: 2, maximumFractionDigits: 2
-                  })}`
-                : "₱0.00",
+                ? `?${parseFloat(totalPayrollData[0].previous_payroll).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                : "?0.00",
               previous_paydate: totalPayrollData[0].previous_paydate
-                ? new Date(totalPayrollData[0].previous_paydate).toLocaleDateString('en-US', {
-                    month: 'long', day: 'numeric', year: 'numeric'
-                  })
+                ? new Date(totalPayrollData[0].previous_paydate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
                 : "N/A",
               upcoming_payroll: totalPayrollData[0].upcoming_payroll
-                ? `₱${parseFloat(totalPayrollData[0].upcoming_payroll).toLocaleString(undefined, {
-                    minimumFractionDigits: 2, maximumFractionDigits: 2
-                  })}`
-                : "₱0.00",
+                ? `?${parseFloat(totalPayrollData[0].upcoming_payroll).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                : "?0.00",
               upcoming_paydate: totalPayrollData[0].upcoming_paydate
-                ? new Date(totalPayrollData[0].upcoming_paydate).toLocaleDateString('en-US', {
-                    month: 'long', day: 'numeric', year: 'numeric'
-                  })
-                : "N/A"
+                ? new Date(totalPayrollData[0].upcoming_paydate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+                : "N/A",
             }
-          : {
-              previous_payroll: "₱0.00",
-              previous_paydate: "N/A",
-              upcoming_payroll: "₱0.00",
-              upcoming_paydate: "N/A"
-            }
+          : { previous_payroll: "?0.00", previous_paydate: "N/A", upcoming_payroll: "?0.00", upcoming_paydate: "N/A" }
 
         setPayrollData(formattedPayrollData)
-        setTransactions(processedTransactions)
       } catch (err) {
         console.error("Error fetching dashboard data:", err)
         setError("Failed to load dashboard data. Please try again later.")
@@ -163,36 +91,80 @@ function AdminDashboardPage() {
         setLoading(false)
       }
     }
-
     fetchDashboardData()
   }, [])
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-white dark:bg-dark-bg transition-colors duration-300">
       <NavBar />
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 sm:px-8 pt-3 sm:pt-10 pb-8">
-
-        {/* Welcome Section */}
+      {/* Dashboard Title */}
+      <div className="container mx-auto px-4 sm:px-8 -mt-16">
         <div className="mb-6 sm:mb-8">
-          <p className="text-lg sm:text-l text-gray-600">Welcome,</p>
-          <h1 className="text-xl sm:text-3xl font-bold text-gray-900">
-            {currentUser.loading ? "Loading..." : currentUser.firstName}
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-700 dark:text-gray-100">
+            Hi, {currentUser.loading ? "Loading..." : currentUser.firstName}
           </h1>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+            Manage your payroll efficiently
+          </p>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="container mx-auto px-4 sm:px-8 pt-0 pb-24">
+
+        {/* Payroll Cards - Horizontal */}
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          {/* Previous Payroll */}
+          <div className="bg-gray-100 dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-xl p-4 sm:p-6 shadow-sm text-gray-900 dark:text-gray-100">
+            <h3 className="text-sm font-medium opacity-80 mb-1">Previous Payroll</h3>
+            <p className="text-xs opacity-60 mb-3">{payrollData.previous_paydate}</p>
+            <p className="text-2xl font-bold">{payrollData.previous_payroll}</p>
+          </div>
+
+          {/* Upcoming Payroll */}
+          <div className="bg-gray-100 dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-xl p-4 sm:p-6 shadow-sm text-gray-900 dark:text-gray-100">
+            <h3 className="text-sm font-medium opacity-80 mb-1">Upcoming Payroll</h3>
+            <p className="text-xs opacity-60 mb-3">{payrollData.upcoming_paydate}</p>
+            <p className="text-2xl font-bold">{payrollData.upcoming_payroll}</p>
+          </div>
         </div>
 
-        {/* Payroll Summary Cards — mobile only, shown above table */}
-        <div className="grid grid-cols-2 lg:hidden gap-3 mb-4">
-          <div className="bg-[#333333] rounded-xl p-4 text-white">
-            <p className="text-xs opacity-70 mb-1">Previous Payroll</p>
-            <p className="text-xs opacity-60 mb-2">{payrollData.previous_paydate}</p>
-            <p className="text-sm font-bold">{payrollData.previous_payroll}</p>
-          </div>
-          <div className="bg-[#333333] rounded-xl p-4 text-white">
-            <p className="text-xs opacity-70 mb-1">Upcoming Payroll</p>
-            <p className="text-xs opacity-60 mb-2">{payrollData.upcoming_paydate}</p>
-            <p className="text-sm font-bold">{payrollData.upcoming_payroll}</p>
+        {/* Payroll Chart Section */}
+        <div className="mb-6">
+          <div className="bg-gray-100 dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-xl p-4 sm:p-6 shadow-sm text-gray-900 dark:text-gray-100">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <h3 className="text-sm font-medium opacity-80 mb-4">Payroll Distribution</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">Previous Payroll</p>
+                    </div>
+                    <p className="text-sm font-medium">{payrollData.previous_payroll}</p>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">Upcoming Payroll</p>
+                    </div>
+                    <p className="text-sm font-medium">{payrollData.upcoming_payroll}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="ml-6">
+                <div className="relative w-32 h-32">
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-green-500 to-blue-500 opacity-20"></div>
+                  <div className="absolute inset-2 rounded-full bg-gray-100 dark:bg-dark-card flex items-center justify-center">
+                    <div className="text-center">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Total</p>
+                      <p className="text-lg font-bold text-gray-700 dark:text-gray-200">Payroll</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -201,8 +173,16 @@ function AdminDashboardPage() {
 
           {/* Transaction History */}
           <div className="lg:col-span-2">
-            <div className="bg-[#333333] rounded-xl p-4 sm:p-6 text-white">
-              <h2 className="text-sm sm:text-base font-semibold mb-4">Payroll Overview</h2>
+            <div className="bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-xl p-4 sm:p-6 shadow-sm text-gray-900 dark:text-gray-100">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-sm font-medium opacity-80">Payroll Overview</h2>
+                <button
+                  onClick={() => navigate('/payroll')}
+                  className="text-xs text-[#5C7346] hover:text-[#4a5c38] transition-colors underline"
+                >
+                  View All
+                </button>
+              </div>
 
               {loading ? (
                 <div className="flex justify-center items-center py-8">
@@ -215,16 +195,13 @@ function AdminDashboardPage() {
               ) : (
                 <>
                   {/* Column Headers */}
-                  <div className="grid grid-cols-12 gap-1 sm:gap-2 mb-3 border-b border-white/10 pb-2">
-                    <div className="col-span-4 font-semibold text-xs opacity-70">Employee</div>
-                    <div className="col-span-2 text-center font-semibold text-xs opacity-70">Date</div>
-                    <div className="col-span-2 text-right font-semibold text-xs opacity-70">Gross</div>
-                    <div className="col-span-2 text-right font-semibold text-xs opacity-70">Deduct.</div>
-                    <div className="col-span-2 text-right font-semibold text-xs opacity-70">Net</div>
+                  <div className="grid grid-cols-12 gap-1 sm:gap-2 mb-3 border-b border-gray-200 dark:border-dark-border pb-2">
+                    <div className="col-span-8 font-semibold text-xs opacity-70">Employee</div>
+                    <div className="col-span-4 text-right font-semibold text-xs opacity-70">Net Pay</div>
                   </div>
 
                   {/* Transaction List */}
-                  <div className="overflow-y-auto max-h-64 sm:max-h-80 pr-1">
+                  <div className="pr-1">
                     <div className="space-y-4 sm:space-y-5">
                       {transactions.length === 0 ? (
                         <div className="text-center py-6">
@@ -232,34 +209,16 @@ function AdminDashboardPage() {
                         </div>
                       ) : (
                         transactions.map((transaction) => (
-                          <div key={transaction.id} className="grid grid-cols-12 gap-1 sm:gap-2 items-center">
-                            <div className="col-span-4 flex items-center gap-2">
-                              <div className="h-7 w-7 sm:h-9 sm:w-9 flex-shrink-0">
-                                {transaction.profilePicture ? (
-                                  <img
-                                    src={transaction.profilePicture}
-                                    alt={transaction.name}
-                                    className="rounded-full h-full w-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="bg-yellow-500 rounded-full h-full w-full flex items-center justify-center text-white text-xs font-bold">
-                                    {transaction.name.split(' ').map(n => n[0]).join('')}
-                                  </div>
-                                )}
-                              </div>
-                              <div className="min-w-0">
-                                <p className="font-medium text-xs truncate">{transaction.name}</p>
-                                <p className="text-xs opacity-60 truncate hidden sm:block">{transaction.role}</p>
-                              </div>
+                          <div
+                            key={transaction.id}
+                            className="grid grid-cols-12 gap-1 sm:gap-2 items-center pb-4 border-b border-gray-200 dark:border-dark-border"
+                          >
+                            <div className="col-span-8">
+                              <p className="font-medium text-lg truncate">{transaction.name}</p>
+                              <p className="text-base opacity-60 whitespace-pre-line">{transaction.formattedDate}</p>
                             </div>
-                            <div className="col-span-2 text-center whitespace-pre-line text-xs opacity-80">
-                              {transaction.formattedDate}
-                            </div>
-                            <div className="col-span-2 text-right text-xs">{transaction.grossPay}</div>
-                            <div className="col-span-2 text-right text-xs">{transaction.totalDeductions}</div>
-                            <div className="col-span-2 text-right">
-                              <p className="text-xs font-medium">{transaction.netPay}</p>
-                              <p className="text-xs opacity-60 hidden sm:block">{transaction.rate}</p>
+                            <div className="col-span-4 text-right">
+                              <p className="font-medium text-lg">{transaction.netPay}</p>
                             </div>
                           </div>
                         ))
@@ -273,15 +232,15 @@ function AdminDashboardPage() {
 
           {/* Payroll Cards — desktop only */}
           <div className="hidden lg:flex flex-col gap-6">
-            <div className="bg-[#333333] rounded-xl p-6 text-white">
+            <div className="bg-gray-100 dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-xl p-6 shadow-sm text-gray-900 dark:text-gray-100">
               <h3 className="text-sm font-medium opacity-80 mb-1">Previous Payroll</h3>
               <p className="text-xs opacity-60 mb-3">{payrollData.previous_paydate}</p>
-              <p className="text-xl font-bold">{payrollData.previous_payroll}</p>
+              <p className="text-2xl font-bold">{payrollData.previous_payroll}</p>
             </div>
-            <div className="bg-[#333333]/60 rounded-xl p-6 text-white">
+            <div className="bg-gray-100 dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-xl p-6 shadow-sm text-gray-900 dark:text-gray-100">
               <h3 className="text-sm font-medium opacity-80 mb-1">Upcoming Payroll</h3>
               <p className="text-xs opacity-60 mb-3">{payrollData.upcoming_paydate}</p>
-              <p className="text-xl font-bold">{payrollData.upcoming_payroll}</p>
+              <p className="text-2xl font-bold">{payrollData.upcoming_payroll}</p>
             </div>
           </div>
 

@@ -241,7 +241,6 @@ function AdminEmployeeAttendancePage() {
     setAddError(null)
     setAddSuccess(false)
     try {
-      const accessToken = localStorage.getItem("access_token")
       const checkIn = addForm.check_in_time ? `${addForm.check_in_time}:00` : null
       const checkOut = addForm.check_out_time ? `${addForm.check_out_time}:00` : null
       const payload = {
@@ -320,57 +319,83 @@ function AdminEmployeeAttendancePage() {
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case "present": return "bg-green-100 text-green-800"
-      case "late": return "bg-yellow-400 text-yellow-800"
-      case "absent": return "bg-red-500 text-white"
-      default: return "bg-gray-500 text-white"
+      case "late":    return "bg-yellow-400 text-yellow-800"
+      case "absent":  return "bg-red-500 text-white"
+      default:        return "bg-gray-500 text-white"
     }
   }
 
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>
-  if (error) return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-red-500">{error}</div>
+  if (loading) return (
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-bg flex items-center justify-center text-gray-800 dark:text-gray-100 transition-colors duration-300">
+      Loading...
+    </div>
+  )
+  if (error) return (
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-bg flex items-center justify-center text-red-500 transition-colors duration-300">
+      {error}
+    </div>
+  )
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-bg transition-colors duration-300">
       <NavBar />
 
-      {/* Main container — tighter on mobile, original on desktop */}
-      <div className="container mx-auto px-3 pt-16 md:px-8 md:pt-20">
-        <div className="bg-[#333333] rounded-lg p-3 md:p-6">
+      {/* Header */}
+      <div className="container mx-auto px-4 sm:px-8 -mt-16">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-700 dark:text-gray-100">Attendance</h1>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">Track and manage employee attendance</p>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="container mx-auto px-4 sm:px-8 mt-4">
+        <div className="flex justify-center">
+          <div className="inline-flex bg-gray-100 dark:bg-dark-card rounded-full p-1">
+            <button
+              className={`px-6 py-2 text-sm rounded-full md:px-8 md:py-2 md:text-base transition-colors ${
+                activeTab === "attendance"
+                  ? "bg-gray-600 dark:bg-gray-500 text-white font-semibold"
+                  : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+              }`}
+              onClick={() => handleTabChange("attendance")}
+            >
+              Attendance
+            </button>
+            <button
+              className={`px-6 py-2 text-sm rounded-full md:px-8 md:py-2 md:text-base transition-colors ${
+                activeTab === "summary"
+                  ? "bg-gray-600 dark:bg-gray-500 text-white font-semibold"
+                  : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+              }`}
+              onClick={() => handleTabChange("summary")}
+            >
+              Summary
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main container */}
+      <div className="container mx-auto px-3 pt-4 md:px-8 md:pt-4">
+        <div className="bg-white dark:bg-dark-card rounded-lg p-3 md:p-6 shadow-sm border border-transparent dark:border-dark-border">
 
           {/* Header Section */}
           <div className="flex flex-col space-y-2 md:space-y-0 md:flex-row md:justify-between md:items-center mb-4 md:mb-6">
-
-            {/* Tabs */}
-            <div className="flex space-x-2">
-              <button
-                className={`px-3 py-1 text-sm rounded-md md:px-6 md:py-2 md:text-base ${activeTab === "attendance" ? "bg-[#5C7346] text-white font-semibold" : "bg-[#D1DBC4] text-gray-700"}`}
-                onClick={() => handleTabChange("attendance")}
-              >
-                Attendance
-              </button>
-              <button
-                className={`px-3 py-1 text-sm rounded-md md:px-6 md:py-2 md:text-base ${activeTab === "summary" ? "bg-[#5C7346] text-white font-semibold" : "bg-[#D1DBC4] text-gray-700"}`}
-                onClick={() => handleTabChange("summary")}
-              >
-                Summary
-              </button>
-            </div>
-
-            {/* Search + Filters + Add Button */}
             <div className="flex flex-row flex-wrap gap-1 md:gap-2 md:items-center">
               <input
                 type="search"
                 placeholder="Search..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="px-2 py-1 text-xs rounded-md border-0 focus:ring-2 focus:ring-[#5C7346] w-full md:w-54 md:px-4 md:py-2 md:text-base"
+                className="px-3 py-2 text-sm rounded-md border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-bg text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-[#5C7346] w-full md:w-64 md:px-5 md:py-3 md:text-lg placeholder-gray-400 dark:placeholder-gray-500"
               />
               {activeTab === "attendance" && (
                 <div className="flex space-x-1 md:space-x-2">
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="px-1 py-1 text-xs rounded-md border-0 bg-white md:px-4 md:py-2 md:text-base"
+                    className="px-1 py-1 text-xs rounded-md border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-bg text-gray-800 dark:text-gray-100 md:px-4 md:py-2 md:text-base"
                   >
                     <option value="all">All Statuses</option>
                     {statuses.map((status) => (
@@ -382,7 +407,7 @@ function AdminEmployeeAttendancePage() {
                   <select
                     value={dateFilter}
                     onChange={(e) => setDateFilter(e.target.value)}
-                    className="px-1 py-1 text-xs rounded-md border-0 bg-white md:px-4 md:py-2 md:text-base"
+                    className="px-1 py-1 text-xs rounded-md border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-bg text-gray-800 dark:text-gray-100 md:px-4 md:py-2 md:text-base"
                   >
                     <option value="all">All Months</option>
                     {months.map((month) => (
@@ -391,20 +416,11 @@ function AdminEmployeeAttendancePage() {
                   </select>
                 </div>
               )}
-
-              {activeTab === "attendance" && (
-                <button
-                  onClick={() => { setShowAddModal(true); setAddError(null); setAddSuccess(false) }}
-                  className="bg-[#5C7346] hover:bg-[#4a5c38] text-white px-3 py-1 text-xs rounded-md font-semibold flex items-center gap-1 md:px-8 md:py-2 md:text-base md:gap-2"
-                >
-                  <span className="text-base leading-none md:text-xl">+</span> Add Attendance
-                </button>
-              )}
             </div>
           </div>
 
           {/* Title */}
-          <h2 className="text-base font-semibold text-white mb-3 md:text-2xl md:mb-4">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3 md:text-3xl md:mb-4">
             {activeTab === "attendance" ? "Attendance Records" : "Attendance Summary"}
           </h2>
 
@@ -413,38 +429,31 @@ function AdminEmployeeAttendancePage() {
             <div className="overflow-x-auto md:overflow-x-visible">
               <table className="w-full table-fixed">
                 <thead>
-                  <tr className="text-left text-white border-b border-white/20">
-                    <th className="py-2 px-2 text-xs w-[22%] md:py-3 md:px-4 md:text-sm md:w-[12%]">Date</th>
-                    {/* Emp ID: desktop only */}
-                    <th className="hidden md:table-cell py-3 px-4 text-sm w-[10%]">Emp ID</th>
-                    <th className="py-2 px-2 text-xs w-[36%] md:py-3 md:px-4 md:text-sm md:w-[26%]">Name</th>
-                    <th className="py-2 px-2 text-xs w-[20%] md:py-3 md:px-4 md:text-sm md:w-[12%]">In</th>
-                    <th className="py-2 px-2 text-xs w-[22%] md:py-3 md:px-4 md:text-sm md:w-[12%]">Out</th>
-                    {/* Status: desktop only */}
-                    <th className="hidden md:table-cell py-3 px-4 text-sm w-[13%]">Status</th>
-                    {/* Actions: desktop only */}
-                    <th className="hidden md:table-cell py-3 px-4 text-sm w-[15%]">Actions</th>
+                  <tr className="text-left text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-dark-border">
+                    <th className="py-2 px-2 text-sm w-[22%] md:py-3 md:px-4 md:text-base md:w-[12%]">Date</th>
+                    <th className="hidden md:table-cell py-3 px-4 text-base w-[10%]">Emp ID</th>
+                    <th className="py-2 px-2 text-sm w-[36%] md:py-3 md:px-4 md:text-base md:w-[26%]">Name</th>
+                    <th className="py-2 px-2 text-sm w-[20%] md:py-3 md:px-4 md:text-base md:w-[12%]">In</th>
+                    <th className="py-2 px-2 text-sm w-[22%] md:py-3 md:px-4 md:text-base md:w-[12%]">Out</th>
+                    <th className="hidden md:table-cell py-3 px-4 text-base w-[13%]">Status</th>
+                    <th className="hidden md:table-cell py-3 px-4 text-base w-[15%]">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="text-white">
+                <tbody className="text-gray-800 dark:text-gray-100">
                   {currentRecords.length > 0 ? (
                     currentRecords.map((record) => (
                       <>
-                        {/* Main row */}
-                        <tr key={record.id} className="md:border-b md:border-white/10">
-                          <td className="py-2 px-2 text-xs md:py-3 md:px-4 md:text-sm">{new Date(record.date).toLocaleDateString()}</td>
-                          {/* Emp ID: desktop only */}
-                          <td className="hidden md:table-cell py-3 px-4 text-sm">{record.employee_id}</td>
-                          <td className="py-2 px-2 text-xs md:py-3 md:px-4 md:text-sm">{record.employee_name}</td>
-                          <td className="py-2 px-2 text-xs md:py-3 md:px-4 md:text-sm">{record.time_in}</td>
-                          <td className="py-2 px-2 text-xs md:py-3 md:px-4 md:text-sm">{record.time_out}</td>
-                          {/* Status: desktop only */}
+                        <tr key={record.id} className="md:border-b md:border-gray-100 dark:md:border-dark-border">
+                          <td className="py-2 px-2 text-sm md:py-3 md:px-4 md:text-base opacity-60">{new Date(record.date).toLocaleDateString()}</td>
+                          <td className="hidden md:table-cell py-3 px-4 text-base">{record.employee_id}</td>
+                          <td className="py-2 px-2 font-medium text-lg md:py-3 md:px-4 md:text-xl truncate">{record.employee_name}</td>
+                          <td className="py-2 px-2 text-sm md:py-3 md:px-4 md:text-base">{record.time_in}</td>
+                          <td className="py-2 px-2 text-sm md:py-3 md:px-4 md:text-base">{record.time_out}</td>
                           <td className="hidden md:table-cell py-3 px-4">
-                            <span className={`px-4 py-1 text-sm rounded-full font-medium whitespace-nowrap ${getStatusColor(record.status)}`}>
+                            <span className={`px-4 py-1 text-base rounded-full font-medium whitespace-nowrap ${getStatusColor(record.status)}`}>
                               {record.status || "Unknown"}
                             </span>
                           </td>
-                          {/* Actions: desktop only */}
                           <td className="hidden md:table-cell py-3 px-4">
                             <button
                               onClick={() => handleDeleteAttendance(record.id, record.user, record.date, record.check_in_time, record.check_out_time)}
@@ -455,19 +464,17 @@ function AdminEmployeeAttendancePage() {
                             </button>
                           </td>
                         </tr>
-
-                        {/* Mobile sub-row: Emp ID, Status, Delete */}
-                        <tr key={`mobile-sub-${record.id}`} className="border-b border-white/10 md:hidden">
+                        <tr key={`mobile-sub-${record.id}`} className="border-b border-gray-100 dark:border-dark-border md:hidden">
                           <td colSpan="4" className="pb-2 px-2">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-xs text-white/60">ID: {record.employee_id}</span>
-                              <span className={`px-2 py-0.5 text-xs rounded-full font-medium whitespace-nowrap ${getStatusColor(record.status)}`}>
+                              <span className="text-sm text-gray-500 dark:text-gray-400">ID: {record.employee_id}</span>
+                              <span className={`px-2 py-0.5 text-sm rounded-full font-medium whitespace-nowrap ${getStatusColor(record.status)}`}>
                                 {record.status || "Unknown"}
                               </span>
                               <button
                                 onClick={() => handleDeleteAttendance(record.id, record.user, record.date, record.check_in_time, record.check_out_time)}
                                 disabled={deleteLoading}
-                                className="bg-red-500 hover:bg-red-600 text-white px-2 py-0.5 text-xs rounded-md transition-colors"
+                                className="bg-red-500 hover:bg-red-600 text-white px-2 py-0.5 text-sm rounded-md transition-colors"
                               >
                                 Delete
                               </button>
@@ -478,12 +485,12 @@ function AdminEmployeeAttendancePage() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="7" className="py-4 text-center text-xs md:text-base">No attendance records found</td>
+                      <td colSpan="7" className="py-4 text-center text-sm md:text-lg text-gray-500 dark:text-gray-400">No attendance records found</td>
                     </tr>
                   )}
                   {currentRecords.length > 0 &&
                     [...Array(Math.max(0, recordsPerPage - currentRecords.length))].map((_, index) => (
-                      <tr key={`empty-${index}`} className="border-b border-white/10 h-[40px] md:h-[52px]">
+                      <tr key={`empty-${index}`} className="border-b border-gray-100 dark:border-dark-border h-[40px] md:h-[52px]">
                         <td colSpan="7"></td>
                       </tr>
                     ))}
@@ -497,47 +504,40 @@ function AdminEmployeeAttendancePage() {
             <div className="overflow-x-auto md:overflow-x-visible">
               <table className="w-full table-fixed">
                 <thead>
-                  <tr className="text-left text-white border-b border-white/20">
-                    <th className="py-2 px-2 text-xs w-[22%] md:py-3 md:px-4 md:text-sm md:w-[12%]">Biweek</th>
-                    {/* Emp ID: desktop only */}
-                    <th className="hidden md:table-cell py-3 px-4 text-sm w-[10%]">Emp ID</th>
-                    <th className="py-2 px-2 text-xs w-[32%] md:py-3 md:px-4 md:text-sm md:w-[18%]">Name</th>
-                    <th className="py-2 px-2 text-xs w-[16%] md:py-3 md:px-4 md:text-sm md:w-[7%]">Hrs</th>
-                    <th className="py-2 px-2 text-xs w-[15%] md:py-3 md:px-4 md:text-sm md:w-[7%]">OT</th>
-                    <th className="py-2 px-2 text-xs w-[15%] md:py-3 md:px-4 md:text-sm md:w-[7%]">Late</th>
-                    {/* Extra columns: desktop only */}
-                    <th className="hidden md:table-cell py-3 px-4 text-sm w-[7%]">Reg Hol</th>
-                    <th className="hidden md:table-cell py-3 px-4 text-sm w-[7%]">Spec Hol</th>
-                    <th className="hidden md:table-cell py-3 px-4 text-sm w-[7%]">Rest Day</th>
-                    <th className="hidden md:table-cell py-3 px-4 text-sm w-[7%]">Night Diff</th>
-                    <th className="hidden md:table-cell py-3 px-4 text-sm w-[7%]">Undertime</th>
+                  <tr className="text-left text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-dark-border">
+                    <th className="py-2 px-2 text-sm w-[22%] md:py-3 md:px-4 md:text-base md:w-[12%]">Biweek</th>
+                    <th className="hidden md:table-cell py-3 px-4 text-base w-[10%]">Emp ID</th>
+                    <th className="py-2 px-2 text-sm w-[32%] md:py-3 md:px-4 md:text-base md:w-[18%]">Name</th>
+                    <th className="py-2 px-2 text-sm w-[16%] md:py-3 md:px-4 md:text-base md:w-[7%]">Hrs</th>
+                    <th className="py-2 px-2 text-sm w-[15%] md:py-3 md:px-4 md:text-base md:w-[7%]">OT</th>
+                    <th className="py-2 px-2 text-sm w-[15%] md:py-3 md:px-4 md:text-base md:w-[7%]">Late</th>
+                    <th className="hidden md:table-cell py-3 px-4 text-base w-[7%]">Reg Hol</th>
+                    <th className="hidden md:table-cell py-3 px-4 text-base w-[7%]">Spec Hol</th>
+                    <th className="hidden md:table-cell py-3 px-4 text-base w-[7%]">Rest Day</th>
+                    <th className="hidden md:table-cell py-3 px-4 text-base w-[7%]">Night Diff</th>
+                    <th className="hidden md:table-cell py-3 px-4 text-base w-[7%]">Undertime</th>
                   </tr>
                 </thead>
-                <tbody className="text-white">
+                <tbody className="text-gray-800 dark:text-gray-100">
                   {currentRecords.length > 0 ? (
                     currentRecords.map((record) => (
                       <>
-                        {/* Main row */}
-                        <tr key={record.id} className="md:border-b md:border-white/10">
-                          <td className="py-2 px-2 text-xs md:py-3 md:px-4 md:text-sm">{formatDate(record.biweek_start)}</td>
-                          {/* Emp ID: desktop only */}
-                          <td className="hidden md:table-cell py-3 px-4 text-sm">{record.employee_id}</td>
-                          <td className="py-2 px-2 text-xs md:py-3 md:px-4 md:text-sm">{record.employee_name}</td>
-                          <td className="py-2 px-2 text-xs md:py-3 md:px-4 md:text-sm">{record.actualhours}h</td>
-                          <td className="py-2 px-2 text-xs md:py-3 md:px-4 md:text-sm">{record.regularot}h</td>
-                          <td className="py-2 px-2 text-xs md:py-3 md:px-4 md:text-sm">{record.late}m</td>
-                          {/* Extra cols: desktop only */}
-                          <td className="hidden md:table-cell py-3 px-4 text-sm">{record.regularholiday}h</td>
-                          <td className="hidden md:table-cell py-3 px-4 text-sm">{record.specialholiday}h</td>
-                          <td className="hidden md:table-cell py-3 px-4 text-sm">{record.restday}h</td>
-                          <td className="hidden md:table-cell py-3 px-4 text-sm">{record.nightdiff}h</td>
-                          <td className="hidden md:table-cell py-3 px-4 text-sm">{record.undertime}h</td>
+                        <tr key={record.id} className="md:border-b md:border-gray-100 dark:md:border-dark-border">
+                          <td className="py-2 px-2 text-sm md:py-3 md:px-4 md:text-base opacity-60">{formatDate(record.biweek_start)}</td>
+                          <td className="hidden md:table-cell py-3 px-4 text-base">{record.employee_id}</td>
+                          <td className="py-2 px-2 font-medium text-lg md:py-3 md:px-4 md:text-xl truncate">{record.employee_name}</td>
+                          <td className="py-2 px-2 text-sm md:py-3 md:px-4 md:text-base">{record.actualhours}h</td>
+                          <td className="py-2 px-2 text-sm md:py-3 md:px-4 md:text-base">{record.regularot}h</td>
+                          <td className="py-2 px-2 text-sm md:py-3 md:px-4 md:text-base">{record.late}m</td>
+                          <td className="hidden md:table-cell py-3 px-4 text-base">{record.regularholiday}h</td>
+                          <td className="hidden md:table-cell py-3 px-4 text-base">{record.specialholiday}h</td>
+                          <td className="hidden md:table-cell py-3 px-4 text-base">{record.restday}h</td>
+                          <td className="hidden md:table-cell py-3 px-4 text-base">{record.nightdiff}h</td>
+                          <td className="hidden md:table-cell py-3 px-4 text-base">{record.undertime}h</td>
                         </tr>
-
-                        {/* Mobile sub-row: Emp ID + hidden extra stats */}
-                        <tr key={`mobile-summary-sub-${record.id}`} className="border-b border-white/10 md:hidden">
+                        <tr key={`mobile-summary-sub-${record.id}`} className="border-b border-gray-100 dark:border-dark-border md:hidden">
                           <td colSpan="5" className="pb-2 px-2">
-                            <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-white/70">
+                            <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-gray-500 dark:text-gray-400">
                               <span>ID: {record.employee_id}</span>
                               <span>Reg Hol: {record.regularholiday}h</span>
                               <span>Spec Hol: {record.specialholiday}h</span>
@@ -551,12 +551,12 @@ function AdminEmployeeAttendancePage() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="11" className="py-4 text-center text-xs md:text-base">No overtime records found</td>
+                      <td colSpan="11" className="py-4 text-center text-sm md:text-lg text-gray-500 dark:text-gray-400">No overtime records found</td>
                     </tr>
                   )}
                   {currentRecords.length > 0 &&
                     [...Array(Math.max(0, recordsPerPage - currentRecords.length))].map((_, index) => (
-                      <tr key={`empty-${index}`} className="border-b border-white/10 h-[40px] md:h-[52px]">
+                      <tr key={`empty-${index}`} className="border-b border-gray-100 dark:border-dark-border h-[40px] md:h-[52px]">
                         <td colSpan="11"></td>
                       </tr>
                     ))}
@@ -571,17 +571,17 @@ function AdminEmployeeAttendancePage() {
               <button
                 onClick={prevPage}
                 disabled={currentPage === 1}
-                className={`bg-[#5C7346] text-white px-3 py-1.5 text-xs rounded-md hover:bg-[#4a5c38] transition-colors md:px-4 md:py-2 md:text-base ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""}`}
+                className={`bg-[#5C7346] text-white px-3 py-1.5 text-xs rounded-full hover:bg-[#4a5c38] transition-colors md:px-4 md:py-2 md:text-base ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 Previous
               </button>
-              <div className="bg-white text-[#5C7346] px-3 py-1.5 text-xs rounded-md min-w-[60px] text-center md:px-4 md:py-2 md:text-base md:min-w-[80px]">
+              <div className="bg-white dark:bg-dark-bg text-[#5C7346] px-3 py-1.5 text-xs rounded-full min-w-[60px] text-center md:px-4 md:py-2 md:text-base md:min-w-[80px] border border-gray-200 dark:border-dark-border">
                 {currentPage} of {totalPages || 1}
               </div>
               <button
                 onClick={nextPage}
                 disabled={currentPage === totalPages || totalPages === 0}
-                className={`bg-[#5C7346] text-white px-3 py-1.5 text-xs rounded-md hover:bg-[#4a5c38] transition-colors md:px-4 md:py-2 md:text-base ${currentPage === totalPages || totalPages === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+                className={`bg-[#5C7346] text-white px-3 py-1.5 text-xs rounded-full hover:bg-[#4a5c38] transition-colors md:px-4 md:py-2 md:text-base ${currentPage === totalPages || totalPages === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 Next
               </button>
@@ -590,117 +590,130 @@ function AdminEmployeeAttendancePage() {
         </div>
       </div>
 
-      {/* ADD ATTENDANCE MODAL — unchanged, already compact */}
+      {/* ADD ATTENDANCE BOTTOM SHEET */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#333333] rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
-            <div className="bg-[#5C7346] px-6 py-4 flex items-center justify-between">
-              <h3 className="text-white text-xl font-bold">Add Attendance Record</h3>
-              <button
-                onClick={() => { setShowAddModal(false); setAddError(null); setAddSuccess(false) }}
-                className="text-white hover:text-gray-200 transition-colors text-2xl leading-none"
-              >
-                ×
-              </button>
+        <div
+          className="fixed inset-0 z-50 bg-black/40 flex items-end"
+          onClick={(e) => { if (e.target === e.currentTarget) { setShowAddModal(false); setAddError(null); setAddSuccess(false) } }}
+        >
+          <div className="bg-white dark:bg-dark-card w-full rounded-t-2xl max-h-[92dvh] overflow-y-auto border-t border-dark-border">
+            {/* Drag handle */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-9 h-1 rounded-full bg-gray-300 dark:bg-gray-600" />
             </div>
 
-            <form onSubmit={handleAddAttendance} className="px-6 py-5 space-y-4">
-              <div>
-                <label className="block text-white text-sm font-medium mb-1">Employee *</label>
-                <select
-                  required
-                  value={addForm.user}
-                  onChange={(e) => setAddForm((prev) => ({ ...prev, user: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-md bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#5C7346]"
-                >
-                  <option value="">Select an employee</option>
-                  {employees.map((emp) => (
-                    <option key={emp.user?.id} value={emp.user?.id}>
-                      {emp.first_name} {emp.last_name} — {emp.employee_number}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <div className="px-6 pt-2 pb-10">
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-5">Add attendance record</h3>
 
-              <div>
-                <label className="block text-white text-sm font-medium mb-1">Date *</label>
-                <input
-                  type="date"
-                  required
-                  value={addForm.date}
-                  onChange={(e) => setAddForm((prev) => ({ ...prev, date: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-md bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#5C7346]"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
+              <form onSubmit={handleAddAttendance} className="space-y-4">
+                {/* Employee */}
                 <div>
-                  <label className="block text-white text-sm font-medium mb-1">Time In *</label>
-                  <input
-                    type="time"
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1.5">Employee</p>
+                  <select
                     required
-                    value={addForm.check_in_time}
-                    onChange={(e) => setAddForm((prev) => ({ ...prev, check_in_time: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-md bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#5C7346]"
-                  />
+                    value={addForm.user}
+                    onChange={(e) => setAddForm((prev) => ({ ...prev, user: e.target.value }))}
+                    className="w-full px-3.5 py-3 rounded-xl bg-gray-100 dark:bg-dark-bg text-gray-800 dark:text-gray-100 text-[15px] border-0 focus:outline-none focus:ring-2 focus:ring-[#5C7346]"
+                  >
+                    <option value="">Select an employee</option>
+                    {employees.map((emp) => (
+                      <option key={emp.user?.id} value={emp.user?.id}>
+                        {emp.first_name} {emp.last_name} — {emp.employee_number}
+                      </option>
+                    ))}
+                  </select>
                 </div>
+
+                {/* Date */}
                 <div>
-                  <label className="block text-white text-sm font-medium mb-1">Time Out</label>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1.5">Date</p>
                   <input
-                    type="time"
-                    value={addForm.check_out_time}
-                    onChange={(e) => setAddForm((prev) => ({ ...prev, check_out_time: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-md bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#5C7346]"
+                    type="date"
+                    required
+                    value={addForm.date}
+                    onChange={(e) => setAddForm((prev) => ({ ...prev, date: e.target.value }))}
+                    className="w-full px-3.5 py-3 rounded-xl bg-gray-100 dark:bg-dark-bg text-gray-800 dark:text-gray-100 text-[15px] border-0 focus:outline-none focus:ring-2 focus:ring-[#5C7346]"
                   />
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-white text-sm font-medium mb-1">Status *</label>
-                <select
-                  required
-                  value={addForm.status}
-                  onChange={(e) => setAddForm((prev) => ({ ...prev, status: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-md bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#5C7346]"
-                >
-                  <option value="present">Present</option>
-                  <option value="late">Late</option>
-                  <option value="absent">Absent</option>
-                  <option value="overtime">Overtime</option>
-                  <option value="undertime">Undertime</option>
-                </select>
-              </div>
-
-              {addError && (
-                <div className="bg-red-500/20 border border-red-500 text-red-300 px-4 py-2 rounded-md text-sm">
-                  {addError}
+                {/* Time In / Out */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-1.5">Time in</p>
+                    <input
+                      type="time"
+                      required
+                      value={addForm.check_in_time}
+                      onChange={(e) => setAddForm((prev) => ({ ...prev, check_in_time: e.target.value }))}
+                      className="w-full px-3.5 py-3 rounded-xl bg-gray-100 dark:bg-dark-bg text-gray-800 dark:text-gray-100 text-[15px] border-0 focus:outline-none focus:ring-2 focus:ring-[#5C7346]"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-1.5">Time out</p>
+                    <input
+                      type="time"
+                      value={addForm.check_out_time}
+                      onChange={(e) => setAddForm((prev) => ({ ...prev, check_out_time: e.target.value }))}
+                      className="w-full px-3.5 py-3 rounded-xl bg-gray-100 dark:bg-dark-bg text-gray-800 dark:text-gray-100 text-[15px] border-0 focus:outline-none focus:ring-2 focus:ring-[#5C7346]"
+                    />
+                  </div>
                 </div>
-              )}
-              {addSuccess && (
-                <div className="bg-green-500/20 border border-green-500 text-green-300 px-4 py-2 rounded-md text-sm">
-                  ✓ Attendance record added successfully!
-                </div>
-              )}
 
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => { setShowAddModal(false); setAddError(null); setAddSuccess(false) }}
-                  className="px-5 py-2 rounded-md bg-gray-500 hover:bg-gray-600 text-white transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={addLoading}
-                  className="px-5 py-2 rounded-md bg-[#5C7346] hover:bg-[#4a5c38] text-white font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {addLoading ? "Saving..." : "Save Record"}
-                </button>
-              </div>
-            </form>
+                {/* Status Pills */}
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Status</p>
+                  <div className="flex flex-wrap gap-2">
+                    {["present", "late", "absent", "overtime", "undertime"].map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setAddForm((prev) => ({ ...prev, status: s }))}
+                        className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${
+                          addForm.status === s
+                            ? "bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900"
+                            : "bg-gray-100 dark:bg-dark-bg text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-dark-border"
+                        }`}
+                      >
+                        {s.charAt(0).toUpperCase() + s.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {addError   && <p className="text-sm text-red-500">{addError}</p>}
+                {addSuccess && <p className="text-sm text-green-500">✓ Attendance record added successfully!</p>}
+
+                {/* Actions */}
+                <div className="flex justify-between items-center pt-3">
+                  <button
+                    type="button"
+                    onClick={() => { setShowAddModal(false); setAddError(null); setAddSuccess(false) }}
+                    className="text-red-500 text-base font-medium bg-transparent border-0"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={addLoading}
+                    className="bg-[#5C7346] text-white px-7 py-3 rounded-xl text-[15px] font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {addLoading ? "Saving..." : "Save record"}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
+      )}
+
+      {/* Floating Add Button */}
+      {activeTab === "attendance" && !showAddModal && (
+        <button
+          onClick={() => { setShowAddModal(true); setAddError(null); setAddSuccess(false) }}
+          className="fixed bottom-20 right-6 bg-[#5C7346] hover:bg-[#4a5c38] text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-105 z-50"
+        >
+          <span className="text-2xl font-bold">+</span>
+        </button>
       )}
     </div>
   )

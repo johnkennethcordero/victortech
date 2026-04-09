@@ -5,8 +5,7 @@ import Calendar from "./Calendar"
 import { API_BASE_URL } from "../config/api"
 import dayjs from "dayjs"
 
-// Custom dropdown to prevent native select overflow on mobile
-const CustomSelect = ({ value, onChange, options, placeholder, required }) => {
+const CustomSelect = ({ value, onChange, options, placeholder }) => {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
@@ -18,20 +17,20 @@ const CustomSelect = ({ value, onChange, options, placeholder, required }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  const selected = options.find(o => o.value === value)
+  const selected = options.find((o) => o.value === value)
 
   return (
     <div ref={ref} className="relative w-full">
       <button
         type="button"
-        onClick={() => setOpen(prev => !prev)}
-        className={`w-full flex items-center justify-between gap-2 px-2 py-1.5 text-xs border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5C7346] bg-white md:px-3 md:py-2 md:text-sm ${
-          !value ? "text-gray-400" : "text-gray-900"
-        } border-gray-300`}
+        onClick={() => setOpen((prev) => !prev)}
+        className={`w-full flex items-center justify-between gap-2 px-3 py-2.5 text-sm border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-700 bg-white dark:bg-dark-bg transition-colors border-gray-200 dark:border-dark-border ${
+          !value ? "text-gray-400 dark:text-gray-500" : "text-gray-900 dark:text-gray-100"
+        }`}
       >
         <span className="truncate">{selected?.label || placeholder}</span>
         <svg
-          className={`w-3 h-3 flex-shrink-0 transition-transform text-gray-500 ${open ? "rotate-180" : ""}`}
+          className={`w-4 h-4 flex-shrink-0 transition-transform text-gray-400 dark:text-gray-500 ${open ? "rotate-180" : ""}`}
           fill="none" viewBox="0 0 24 24" stroke="currentColor"
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -39,13 +38,15 @@ const CustomSelect = ({ value, onChange, options, placeholder, required }) => {
       </button>
 
       {open && (
-        <ul className="absolute left-0 top-full mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-48 overflow-y-auto">
-          {options.map(option => (
+        <ul className="absolute left-0 top-full mt-1 w-full bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto">
+          {options.map((option) => (
             <li
               key={option.value}
               onClick={() => { onChange(option.value); setOpen(false) }}
-              className={`px-3 py-2 text-xs cursor-pointer hover:bg-[#5C7346] hover:text-white transition-colors md:text-sm ${
-                value === option.value ? "bg-[#5C7346] text-white font-medium" : "text-gray-800"
+              className={`px-4 py-2.5 text-sm cursor-pointer transition-colors first:rounded-t-xl last:rounded-b-xl ${
+                value === option.value
+                  ? "bg-gray-900 dark:bg-gray-600 text-white font-medium"
+                  : "text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-dark-bg"
               }`}
             >
               {option.label}
@@ -57,33 +58,73 @@ const CustomSelect = ({ value, onChange, options, placeholder, required }) => {
   )
 }
 
-function AddEmployee({ isOpen, onClose, onAdd }) {
-  const FormState = {
-    employee_number: "",
-    first_name: "",
-    last_name: "",
-    position: "",
-    address: "",
-    hire_date: "",
-    birth_date: "",
-    marital_status: "",
-    other_info: "",
-    profile_picture: null,
-    active: true,
-    role: "",
-    email: "",
-    password: "",
-  }
+const PillToggleGroup = ({ value, onChange, options }) => (
+  <div className="flex gap-2 flex-wrap">
+    {options.map((opt) => (
+      <button
+        key={opt.value}
+        type="button"
+        onClick={() => onChange(opt.value)}
+        className={`px-4 py-2 rounded-full text-sm font-medium border transition-all ${
+          value === opt.value
+            ? "bg-gray-900 dark:bg-gray-600 text-white border-gray-900 dark:border-gray-600"
+            : "bg-white dark:bg-dark-bg text-gray-700 dark:text-gray-300 border-gray-200 dark:border-dark-border hover:border-gray-400 dark:hover:border-gray-500"
+        }`}
+      >
+        {opt.label}
+      </button>
+    ))}
+  </div>
+)
 
-  const [formData, setFormData] = useState(FormState)
+const INITIAL_FORM = {
+  employee_number: "",
+  first_name: "",
+  last_name: "",
+  position: "",
+  address: "",
+  hire_date: "",
+  birth_date: "",
+  marital_status: "",
+  other_info: "",
+  profile_picture: null,
+  active: true,
+  role: "",
+  email: "",
+  password: "",
+}
+
+const inputClass =
+  "w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-dark-border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-700 placeholder-gray-300 dark:placeholder-gray-600 bg-white dark:bg-dark-bg text-gray-900 dark:text-gray-100"
+
+function AddEmployee({ isOpen, onClose, onAdd }) {
+  const [formData, setFormData] = useState(INITIAL_FORM)
   const [error, setError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [previewImage, setPreviewImage] = useState(null)
+  const [visible, setVisible] = useState(false)
+  const [expanded, setExpanded] = useState(false)
+  const scrollRef = useRef(null)
 
-  const resetForm = () => {
-    setFormData(FormState)
-    setError("")
-    setPreviewImage(null)
+  useEffect(() => {
+    if (isOpen) {
+      setExpanded(false)
+      requestAnimationFrame(() => setVisible(true))
+    } else {
+      setVisible(false)
+      setExpanded(false)
+    }
+  }, [isOpen])
+
+  const handleScroll = () => {
+    if (scrollRef.current && scrollRef.current.scrollTop > 10) setExpanded(true)
+  }
+
+  const resetForm = () => { setFormData(INITIAL_FORM); setError(""); setPreviewImage(null) }
+
+  const handleClose = () => {
+    setVisible(false)
+    setTimeout(() => { resetForm(); onClose() }, 300)
   }
 
   const handleSubmit = async (e) => {
@@ -124,11 +165,7 @@ function AddEmployee({ isOpen, onClose, onAdd }) {
 
       const responseText = await response.text()
       let data
-      try {
-        data = JSON.parse(responseText)
-      } catch (e) {
-        throw new Error(`Server response: ${responseText}`)
-      }
+      try { data = JSON.parse(responseText) } catch { throw new Error(`Server response: ${responseText}`) }
 
       if (!response.ok) {
         if (typeof data === "object") {
@@ -145,7 +182,7 @@ function AddEmployee({ isOpen, onClose, onAdd }) {
 
       onAdd(data)
       resetForm()
-      onClose()
+      handleClose()
     } catch (error) {
       console.error("Error adding employee:", error)
       setError(error.message || "Failed to add employee. Please try again.")
@@ -166,246 +203,188 @@ function AddEmployee({ isOpen, onClose, onAdd }) {
     }
   }
 
-  const handleDateChange = (name, value) =>
-    setFormData((prev) => ({ ...prev, [name]: value }))
-
-  const handleClose = () => {
-    resetForm()
-    onClose()
-  }
+  const handleDateChange = (name, value) => setFormData((prev) => ({ ...prev, [name]: value }))
 
   const today = dayjs().format("YYYY-MM-DD")
 
   const roleOptions = [
-    { value: "", label: "Select Role" },
     { value: "owner", label: "Owner" },
     { value: "admin", label: "Admin" },
     { value: "employee", label: "Employee" },
   ]
-
   const maritalOptions = [
-    { value: "", label: "Select Status" },
     { value: "single", label: "Single" },
     { value: "married", label: "Married" },
     { value: "widowed", label: "Widowed" },
+  ]
+  const activeOptions = [
+    { value: "true", label: "Active" },
+    { value: "false", label: "Inactive" },
   ]
 
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 md:p-4 z-50">
-      <div className="bg-white rounded-lg w-full max-w-4xl p-4 md:p-8 max-h-[95vh] md:max-h-[90vh] overflow-y-auto">
-
-        <h2 className="text-l md:text-xl font-bold mb-4 md:mb-6">Add New Employee</h2>
-
-        {error && (
-          <div className="mb-4 md:mb-6 p-3 md:p-4 bg-red-100 border border-red-400 text-red-700 rounded text-xs md:text-sm whitespace-pre-line">
-            {error}
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center"
+      style={{ backgroundColor: `rgba(0,0,0,${visible ? 0.5 : 0})`, transition: "background-color 0.3s ease" }}
+      onClick={(e) => { if (e.target === e.currentTarget) handleClose() }}
+    >
+      <div
+        className="w-full bg-white dark:bg-dark-card rounded-t-3xl flex flex-col border-t border-transparent dark:border-dark-border"
+        style={{
+          maxHeight: expanded ? "92vh" : "50vh",
+          maxWidth: "600px",
+          transform: visible ? "translateY(0)" : "translateY(100%)",
+          transition: "transform 0.3s cubic-bezier(0.32, 0.72, 0, 1), max-height 0.35s cubic-bezier(0.32, 0.72, 0, 1)",
+        }}
+      >
+        {/* Header */}
+        <div className="flex-shrink-0 px-5 pt-3 pb-4 border-b border-gray-100 dark:border-dark-border">
+          <div className="flex justify-center mb-3">
+            <div className="w-9 h-1 rounded-full bg-gray-200 dark:bg-gray-600" />
           </div>
-        )}
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Add employee</h2>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+        {/* Scrollable body */}
+        <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto overscroll-contain px-5 py-5">
+          {error && (
+            <div className="mb-5 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-400 rounded-xl text-sm whitespace-pre-line">
+              {error}
+            </div>
+          )}
 
-          {/* User Information */}
-          <div className="space-y-3 md:space-y-4">
-            <h3 className="text-sm md:text-lg font-semibold border-b pb-2">User Information</h3>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-4">
+          <form id="add-employee-form" onSubmit={handleSubmit} className="space-y-5">
 
-              <div className="space-y-1">
-                <label className="block text-xs md:text-sm text-gray-700">Role*</label>
-                <CustomSelect
-                  value={formData.role}
-                  onChange={(val) => setFormData(prev => ({ ...prev, role: val }))}
-                  options={roleOptions}
-                  placeholder="Select Role"
-                  required
-                />
+            {/* Full name */}
+            <div>
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1.5">Full name</label>
+              <div className="grid grid-cols-2 gap-2">
+                <input type="text" name="first_name" value={formData.first_name} onChange={handleChange} placeholder="First name" required className={inputClass} />
+                <input type="text" name="last_name" value={formData.last_name} onChange={handleChange} placeholder="Last name" required className={inputClass} />
               </div>
+            </div>
 
-              <div className="space-y-1">
-                <label className="block text-xs md:text-sm text-gray-700">Email*</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full px-2 py-1.5 text-xs md:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5C7346] md:px-3 md:py-2"
-                  required
-                />
+            {/* Email + Employee # */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1.5">Email</label>
+                <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Optional" className={inputClass} />
               </div>
+              <div>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1.5">Employee #</label>
+                <input type="number" name="employee_number" value={formData.employee_number} onChange={handleChange} placeholder="Optional" required className={inputClass} />
+              </div>
+            </div>
 
-              <div className="space-y-1">
-                <label className="block text-xs md:text-sm text-gray-700">Password*</label>
+            {/* Position + Password */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1.5">Position</label>
+                <input type="text" name="position" value={formData.position} onChange={handleChange} placeholder="Optional" required className={inputClass} />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1.5">Password</label>
+                <input type="password" name="password" value={formData.password} onChange={handleChange} placeholder="Required" required className={inputClass} />
+              </div>
+            </div>
+
+            {/* Address */}
+            <div>
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1.5">Address</label>
+              <input type="text" name="address" value={formData.address} onChange={handleChange} placeholder="Optional" required className={inputClass} />
+            </div>
+
+            {/* Hire + Birth Date */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1.5">Hire date</label>
+                <Calendar label="Hire date" value={formData.hire_date} onChange={(value) => handleDateChange("hire_date", value)} disabled={false} maxDate={today} />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1.5">Birth date</label>
+                <Calendar label="Birth date" value={formData.birth_date} onChange={(value) => handleDateChange("birth_date", value)} disabled={false} maxDate={today} />
+              </div>
+            </div>
+
+            {/* Notes */}
+            <div>
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1.5">Notes</label>
+              <textarea
+                name="other_info"
+                value={formData.other_info}
+                onChange={handleChange}
+                placeholder="Optional details, allergies, etc."
+                className={`${inputClass} resize-none h-20`}
+              />
+            </div>
+
+            {/* Role */}
+            <div>
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1.5">Role</label>
+              <CustomSelect value={formData.role} onChange={(val) => setFormData((prev) => ({ ...prev, role: val }))} options={roleOptions} placeholder="Select role" />
+            </div>
+
+            {/* Marital status */}
+            <div>
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-2">Marital status</label>
+              <PillToggleGroup value={formData.marital_status} onChange={(val) => setFormData((prev) => ({ ...prev, marital_status: val }))} options={maritalOptions} />
+            </div>
+
+            {/* Active status */}
+            <div>
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-2">Status</label>
+              <PillToggleGroup value={String(formData.active)} onChange={(val) => setFormData((prev) => ({ ...prev, active: val === "true" }))} options={activeOptions} />
+            </div>
+
+            {/* Profile picture */}
+            <div>
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-2">Profile picture</label>
+              <div className="flex items-center gap-4">
+                {previewImage ? (
+                  <div className="h-12 w-12 rounded-full overflow-hidden border border-gray-200 dark:border-dark-border flex-shrink-0">
+                    <img src={previewImage} alt="Preview" className="h-full w-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="h-12 w-12 rounded-full bg-gray-100 dark:bg-dark-bg border border-gray-200 dark:border-dark-border flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                )}
                 <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
+                  type="file"
+                  name="profile_picture"
+                  accept="image/*"
                   onChange={handleChange}
-                  className="w-full px-2 py-1.5 text-xs md:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5C7346] md:px-3 md:py-2"
-                  required
+                  className="flex-1 text-sm text-gray-500 dark:text-gray-400 file:mr-3 file:py-1.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-medium file:bg-gray-900 dark:file:bg-gray-600 file:text-white hover:file:bg-gray-700 dark:hover:file:bg-gray-500 transition-all"
                 />
               </div>
             </div>
-          </div>
 
-          {/* Basic Employment Information */}
-          <div className="space-y-3 md:space-y-4">
-            <h3 className="text-sm md:text-lg font-semibold border-b pb-2">Basic Employment Information</h3>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-4">
+          </form>
+        </div>
 
-              <div className="space-y-1">
-                <label className="block text-xs md:text-sm text-gray-700">Employee Number*</label>
-                <input
-                  type="number"
-                  name="employee_number"
-                  value={formData.employee_number}
-                  onChange={handleChange}
-                  className="w-full px-2 py-1.5 text-xs md:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5C7346] md:px-3 md:py-2"
-                  required
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="block text-xs md:text-sm text-gray-700">First Name*</label>
-                <input
-                  type="text"
-                  name="first_name"
-                  value={formData.first_name}
-                  onChange={handleChange}
-                  className="w-full px-2 py-1.5 text-xs md:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5C7346] md:px-3 md:py-2"
-                  required
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="block text-xs md:text-sm text-gray-700">Last Name*</label>
-                <input
-                  type="text"
-                  name="last_name"
-                  value={formData.last_name}
-                  onChange={handleChange}
-                  className="w-full px-2 py-1.5 text-xs md:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5C7346] md:px-3 md:py-2"
-                  required
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="block text-xs md:text-sm text-gray-700">Position*</label>
-                <input
-                  type="text"
-                  name="position"
-                  value={formData.position}
-                  onChange={handleChange}
-                  className="w-full px-2 py-1.5 text-xs md:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5C7346] md:px-3 md:py-2"
-                  required
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="block text-xs md:text-sm text-gray-700">Address*</label>
-                <input
-                  type="text"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
-                  className="w-full px-2 py-1.5 text-xs md:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5C7346] md:px-3 md:py-2"
-                  required
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="block text-xs md:text-sm text-gray-700">Hire Date*</label>
-                <Calendar
-                  label="Hire Date"
-                  value={formData.hire_date}
-                  onChange={(value) => handleDateChange("hire_date", value)}
-                  disabled={false}
-                  maxDate={today}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Additional Information */}
-          <div className="space-y-3 md:space-y-4">
-            <h3 className="text-sm md:text-lg font-semibold border-b pb-2">Additional Information</h3>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-4">
-
-              <div className="space-y-1">
-                <label className="block text-xs md:text-sm text-gray-700">Birth Date</label>
-                <Calendar
-                  label="Birth Date"
-                  value={formData.birth_date}
-                  onChange={(value) => handleDateChange("birth_date", value)}
-                  disabled={false}
-                  maxDate={today}
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="block text-xs md:text-sm text-gray-700">Marital Status</label>
-                <CustomSelect
-                  value={formData.marital_status}
-                  onChange={(val) => setFormData(prev => ({ ...prev, marital_status: val }))}
-                  options={maritalOptions}
-                  placeholder="Select Status"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="block text-xs md:text-sm text-gray-700">Other Information</label>
-                <textarea
-                  name="other_info"
-                  value={formData.other_info}
-                  onChange={handleChange}
-                  className="w-full px-2 py-1.5 text-xs md:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5C7346] h-12 resize-none md:px-3 md:py-2 md:h-16"
-                  placeholder="Add any additional information here"
-                />
-              </div>
-
-              <div className="space-y-1 col-span-1 md:col-span-2">
-                <label className="block text-xs md:text-sm text-gray-700 mb-1 md:mb-2">Profile Picture</label>
-                <div className="flex flex-col items-center space-y-2 md:space-y-4">
-                  {previewImage && (
-                    <div className="h-16 w-16 md:h-24 md:w-24 rounded-full overflow-hidden border border-gray-300 shadow-md">
-                      <img
-                        src={previewImage || "/placeholder.svg"}
-                        alt="Profile preview"
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                  )}
-                  <input
-                    type="file"
-                    name="profile_picture"
-                    accept="image/*"
-                    onChange={handleChange}
-                    className="w-full text-xs md:text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-[#333333] file:text-white hover:file:bg-[#666666] md:file:mr-4 md:file:py-2 md:file:px-4 md:file:text-sm"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-2 pt-3 md:space-x-4 md:pt-4">
-            <button
-              type="button"
-              onClick={handleClose}
-              disabled={isSubmitting}
-              className="px-4 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 md:px-6 md:py-2 md:text-sm"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-4 py-1.5 text-xs font-medium text-white bg-[#333333] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5C7346] disabled:opacity-50 md:px-6 md:py-2 md:text-sm"
-            >
-              {isSubmitting ? "Adding..." : "Add Employee"}
-            </button>
-          </div>
-        </form>
+        {/* Footer */}
+        <div className="flex-shrink-0 px-5 py-4 border-t border-gray-100 dark:border-dark-border bg-white dark:bg-dark-card flex items-center justify-between">
+          <button
+            type="button"
+            onClick={handleClose}
+            disabled={isSubmitting}
+            className="text-sm font-medium text-red-500 hover:text-red-600 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            form="add-employee-form"
+            disabled={isSubmitting}
+            className="px-6 py-2.5 rounded-full text-sm font-medium bg-[#b5cfaa] text-[#3a5a2e] hover:bg-[#9bbf8c] disabled:opacity-50 transition-colors"
+          >
+            {isSubmitting ? "Saving..." : "Save employee"}
+          </button>
+        </div>
       </div>
     </div>
   )
