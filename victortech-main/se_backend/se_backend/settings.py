@@ -74,7 +74,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "drf_yasg",
+    "drf_spectacular",
     "django_filters",
     "corsheaders",
     "django_celery_beat",
