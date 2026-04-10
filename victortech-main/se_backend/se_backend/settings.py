@@ -36,7 +36,8 @@ ALLOWED_HOSTS = [
     "techsauce5.win",
     "localhost",
     "127.0.0.1",
-    '8'
+    '8',
+    "victortech.onrender.com",
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True  # Temporarily allow all origins for debugging
