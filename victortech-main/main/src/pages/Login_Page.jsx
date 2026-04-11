@@ -70,7 +70,7 @@ function LoginPage() {
     <div className="min-h-screen w-full flex flex-col bg-gray-100 overflow-hidden">
 
       {/* Hero Image with black overlay + logo + title on top */}
-      <div className="relative w-full" style={{ height: "45vh" }}>
+      <div className="relative w-full" style={{ height: "55vh" }}>
         <img
           src={heroImage}
           alt="Workers"
@@ -79,14 +79,14 @@ function LoginPage() {
         {/* Black overlay */}
         <div className="absolute inset-0 bg-black/55" />
 
-        {/* Logo at top */}
-        <div className="absolute top-4 left-0 right-0 flex justify-center">
-          <img src={logo} alt="Logo" className="h-12 object-contain" />
+        {/* Logo at very top */}
+        <div className="absolute top-6 left-0 right-0 flex justify-center">
+          <img src={logo} alt="Logo" className="h-14 object-contain" />
         </div>
 
         {/* Title at bottom */}
-        <div className="absolute bottom-8 left-0 right-0 flex justify-center">
-          <h2 className="text-xl font-bold text-white tracking-wide">Payroll Log In</h2>
+        <div className="absolute bottom-12 left-0 right-0 flex justify-center">
+          <h2 className="text-2xl font-bold text-white tracking-wide">Payroll Log In</h2>
         </div>
       </div>
 
