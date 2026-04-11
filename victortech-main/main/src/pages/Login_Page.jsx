@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import logo from "../assets/Login_Page/logo.png"
-import heroImage from "../assets/Login_Page/hero.png" // your workers image
+import heroImage from "../assets/Login_Page/overlay.jpg" // your workers image
 import { API_BASE_URL } from "../config/api"
 
 function LoginPage() {
