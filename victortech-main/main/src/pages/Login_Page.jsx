@@ -11,12 +11,11 @@ import { API_BASE_URL } from "../config/api"
 function LoginPage() {
   const navigate = useNavigate()
   const [formData, setFormData] = useState({
-    id: "",
+    email: "",
     password: "",
   })
   const [error, setError] = useState("")
 
-  // Check if user is already logged in
   useEffect(() => {
     const token = localStorage.getItem("access_token")
     const role = localStorage.getItem("user_role")
@@ -30,7 +29,6 @@ function LoginPage() {
     }
   }, [navigate])
 
-  // Prevent browser back button after login
   useEffect(() => {
     window.history.pushState(null, "", window.location.pathname)
 
@@ -94,7 +92,6 @@ function LoginPage() {
     })
   }
 
-  // Prevent scrolling
   useEffect(() => {
     document.body.style.overflow = "hidden"
     return () => {
@@ -104,26 +101,24 @@ function LoginPage() {
 
   return (
     <div className="min-h-screen w-full relative bg-white flex flex-col items-center justify-center p-5">
-      {/* Logo */}
       <div className="mb-5">
         <img src={logo} alt="Fresco Logo" className="w-40 sm:w-60 object-contain" />
       </div>
 
-      {/* Login Form */}
       <div className="flex justify-center items-center min-h-screen">
         <div className="w-full max-w-[384px] absolute top-[40%] left-1/2 transform -translate-x-1/2 -translate-y-1/2">
           <h2 className="text-xl font-bold text-center text-gray-700 mb-6 sm:mb-10">Payroll Log In</h2>
           <div className="bg-white rounded-lg p-6 sm:p-8">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="id" className="block text-sm font-medium text-gray-700">
-                  Account Number
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  Email
                 </label>
                 <input
-                  type="text"
-                  id="id"
-                  name="id"
-                  value={formData.id}
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
                   onChange={handleChange}
                   required
                   className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400
@@ -162,7 +157,6 @@ function LoginPage() {
         </div>
       </div>
 
-      {/* Footer */}
       <p className="fixed bottom-4 left-0 right-0 text-xs text-gray-400 text-center">
         © {new Date().getFullYear()} VictorTech.All Rights Reserved.
       </p>
