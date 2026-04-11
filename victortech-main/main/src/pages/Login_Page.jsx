@@ -3,43 +3,33 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import logo from "../assets/Login_Page/logo.png"
-import heroImage from "../assets/Login_Page/overlay.jpg" // your workers image
+import heroImage from "../assets/Login_Page/hero.png"
 import { API_BASE_URL } from "../config/api"
 
 function LoginPage() {
   const navigate = useNavigate()
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  })
+  const [formData, setFormData] = useState({ email: "", password: "" })
   const [error, setError] = useState("")
 
   useEffect(() => {
     const token = localStorage.getItem("access_token")
     const role = localStorage.getItem("user_role")
     if (token) {
-      if (role === "admin" || role === "owner") {
-        navigate("/dashboard", { replace: true })
-      } else if (role === "employee") {
-        navigate("/employee/schedule", { replace: true })
-      }
+      if (role === "admin" || role === "owner") navigate("/dashboard", { replace: true })
+      else if (role === "employee") navigate("/employee/schedule", { replace: true })
     }
   }, [navigate])
 
   useEffect(() => {
     window.history.pushState(null, "", window.location.pathname)
-    const handlePopState = () => {
-      window.history.pushState(null, "", window.location.pathname)
-    }
+    const handlePopState = () => window.history.pushState(null, "", window.location.pathname)
     window.addEventListener("popstate", handlePopState)
     return () => window.removeEventListener("popstate", handlePopState)
   }, [])
 
   useEffect(() => {
     document.body.style.overflow = "hidden"
-    return () => {
-      document.body.style.overflow = "auto"
-    }
+    return () => { document.body.style.overflow = "auto" }
   }, [])
 
   const handleSubmit = async (e) => {
@@ -60,13 +50,9 @@ function LoginPage() {
           localStorage.setItem("user_email", data.email)
           localStorage.setItem("user_role", data.role)
           localStorage.setItem("session_start", Date.now().toString())
-          if (data.role === "admin" || data.role === "owner") {
-            navigate("/dashboard", { replace: true })
-          } else if (data.role === "employee") {
-            navigate("/employee/schedule", { replace: true })
-          } else {
-            navigate("/dashboard", { replace: true })
-          }
+          if (data.role === "admin" || data.role === "owner") navigate("/dashboard", { replace: true })
+          else if (data.role === "employee") navigate("/employee/schedule", { replace: true })
+          else navigate("/dashboard", { replace: true })
         } else {
           setError("Login failed. Please check your credentials and try again.")
         }
@@ -78,41 +64,37 @@ function LoginPage() {
     }
   }
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
-  }
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value })
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-gray-100 overflow-hidden">
-      {/* Hero Image — top 40% */}
-      <div className="relative w-full" style={{ height: "40vh" }}>
+
+      {/* Hero Image with black overlay + logo + title on top */}
+      <div className="relative w-full" style={{ height: "45vh" }}>
         <img
           src={heroImage}
-          alt="Workers on electrical tower"
+          alt="Workers"
           className="w-full h-full object-cover object-center"
         />
-        {/* dark overlay for readability */}
-        <div className="absolute inset-0 bg-black/30" />
+        {/* Black overlay */}
+        <div className="absolute inset-0 bg-black/55" />
+
+        {/* Logo + Title centered over image */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+          <img src={logo} alt="Logo" className="h-12 object-contain" />
+          <h2 className="text-xl font-bold text-white tracking-wide">Payroll Log In</h2>
+        </div>
       </div>
 
-      {/* White card — overlaps image with rounded top corners */}
+      {/* White card — pulled up higher */}
       <div
-        className="relative z-10 flex-1 bg-white flex flex-col px-8 pt-10 pb-6"
+        className="relative z-10 flex-1 bg-white flex flex-col px-8 pt-8 pb-6"
         style={{
           borderTopLeftRadius: "2rem",
           borderTopRightRadius: "2rem",
-          marginTop: "-2rem",
+          marginTop: "-3.5rem",
         }}
       >
-        {/* Logo */}
-        <div className="flex justify-center mb-6">
-          <img src={logo} alt="Logo" className="h-12 object-contain" />
-        </div>
-
-        <h2 className="text-xl font-bold text-center text-gray-800 mb-8">
-          Payroll Log In
-        </h2>
-
         <form onSubmit={handleSubmit} className="space-y-5 w-full max-w-sm mx-auto">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
@@ -150,9 +132,7 @@ function LoginPage() {
             />
           </div>
 
-          {error && (
-            <div className="text-red-500 text-sm text-center">{error}</div>
-          )}
+          {error && <div className="text-red-500 text-sm text-center">{error}</div>}
 
           <button
             type="submit"
@@ -164,10 +144,7 @@ function LoginPage() {
           </button>
 
           <div className="text-center">
-            <a
-              href="/forgot-password"
-              className="text-sm text-gray-500 underline hover:text-gray-800 transition"
-            >
+            <a href="/forgot-password" className="text-sm text-gray-500 underline hover:text-gray-800 transition">
               Forgot password?
             </a>
           </div>
