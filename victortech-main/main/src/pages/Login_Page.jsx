@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import logo from "../assets/Login_Page/logo.png"
-import heroImage from "../assets/Login_Page/overlay.jpg"
+import heroImage from "../assets/Login_Page/hero.png"
 import { API_BASE_URL } from "../config/api"
 
 function LoginPage() {
@@ -79,9 +79,13 @@ function LoginPage() {
         {/* Black overlay */}
         <div className="absolute inset-0 bg-black/55" />
 
-        {/* Logo + Title centered over image */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+        {/* Logo at top */}
+        <div className="absolute top-4 left-0 right-0 flex justify-center">
           <img src={logo} alt="Logo" className="h-12 object-contain" />
+        </div>
+
+        {/* Title at bottom */}
+        <div className="absolute bottom-8 left-0 right-0 flex justify-center">
           <h2 className="text-xl font-bold text-white tracking-wide">Payroll Log In</h2>
         </div>
       </div>
@@ -150,7 +154,7 @@ function LoginPage() {
           </div>
         </form>
 
-        <p className="mt-auto pt-6 text-xs text-gray-400 text-center">
+        <p className="fixed bottom-4 left-0 right-0 text-xs text-gray-400 text-center">
           © {new Date().getFullYear()} VictorTech. All Rights Reserved.
         </p>
       </div>
