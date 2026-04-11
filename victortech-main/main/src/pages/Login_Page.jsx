@@ -67,7 +67,7 @@ function LoginPage() {
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value })
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-gray-100 overflow-hidden">
+    <div className="h-screen w-full flex flex-col bg-gray-100 overflow-hidden">
 
       {/* Hero Image with black overlay + logo + title on top */}
       <div className="relative w-full" style={{ height: "40vh" }}>
@@ -85,7 +85,7 @@ function LoginPage() {
         </div>
 
         {/* Title at bottom */}
-        <div className="absolute bottom-16 left-0 right-0 flex justify-center">
+        <div className="absolute bottom-24 left-0 right-0 flex justify-center">
           <h2 className="text-2xl font-bold text-white tracking-wide">Payroll Log In</h2>
         </div>
       </div>
